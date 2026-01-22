@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FreeRoom - 安全聊天室</title>
+    
+    <!-- Bootstrap 5 CSS 从BootCDN加载 -->
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- 自定义样式 -->
+    <link rel="stylesheet" href="css/chat.css">
+</head>
+<body>
+    <!-- 背景元素 -->
+    <canvas id="matrix-bg"></canvas>
+    <div class="grid-lines"></div>
+    <div class="shuriken"></div>
+    <div class="shuriken"></div>
+    <div class="shuriken"></div>
+    <div class="shuriken"></div>
+    <div class="shuriken"></div>
+
+    <div class="container">
+        <!-- 左侧区域 - 标题和配置 -->
+        <div class="left-panel">
+            <!-- 标题区域 -->
+            <div class="main-header">
+                <div class="stealth-indicator"></div>
+                <div class="logo-container">
+                    <div class="center-logo">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                </div>
+                <div class="title-container">
+                    <h1 class="main-title">FreeRoom</h1>
+                    <p class="main-subtitle">加密通讯系统 v2.0</p>
+                </div>
+            </div>
+
+            <!-- 配置面板 -->
+            <div class="panel config-panel">
+                <div class="panel-header">
+                    <h2><i class="fas fa-cog"></i> 配置</h2>
+                    <div class="icon"><i class="fas fa-sliders-h"></i></div>
+                </div>
+                <div class="panel-content">
+                    <!-- 用户配置区域 -->
+                    <div class="collapsible-section">
+                        <div class="section-header" onclick="toggleSection('configItems')" id="configHeader">
+                            <label for="configItems"><i class="fas fa-user"></i> 用户配置</label>
+                            <i class="fas fa-chevron-down arrow-icon"></i>
+                        </div>
+                        <div class="section-content" id="configItems">
+                            <div class="config-item">
+                                <label for="usernameInput">用户名:</label>
+                                <div class="config-controls">
+                                    <input type="text" id="usernameInput" placeholder="您的用户名...">
+                                    <div class="random-btn" id="randomUserBtn"><i class="fas fa-random"></i></div>
+                                </div>
+                            </div>
+                            
+                            <div class="config-item" id="encryptionMethodSection">
+                                <label>加密方式:</label>
+                                <div class="config-controls">
+                                    <select id="encryptionMethod">
+                                        <option value="simple">简单替换</option>
+                                        <option value="aes256">AES-256</option>
+                                        <option value="rsa">RSA</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="config-item" id="encryptionKeySection">
+                                <label>加密密钥:</label>
+                                <div class="config-controls">
+                                    <input type="text" id="encryptionKey" placeholder="点击生成密钥" readonly>
+                                    <div class="random-btn" id="generateKeyBtn"><i class="fas fa-key"></i></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 发送加密申请 -->
+                    <div class="config-item" id="encryptionRequestSection">
+                        <label>加密申请:</label>
+                        <div class="config-controls request-form">
+                            <input type="text" id="targetUsernameInput" placeholder="输入对方用户名" style="flex: 1;">
+                            <button id="sendRequestBtn" class="random-btn" title="发送加密申请"><i class="fas fa-paper-plane"></i></button>
+                        </div>
+                    </div>
+                    
+                    <!-- 申请列表 -->
+                    <div class="request-list-container" style="margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">
+                        <h4 style="margin: 5px 0; color: #0f0; font-size: 0.9em;"><i class="fas fa-list"></i> 申请列表</h4>
+                        <div id="requestList" class="request-list" style="max-height: 150px; overflow-y: auto; background: rgba(0,0,0,0.3); border-radius: 4px; padding: 5px;">
+                            <!-- 申请项将动态插入这里 -->
+                        </div>
+                    </div>
+                    
+                    <!-- 聊天列表 -->
+                    <div class="contact-list-container" style="margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">
+                        <h4 style="margin: 5px 0; color: #0f0; font-size: 0.9em;"><i class="fas fa-users"></i> 聊天列表</h4>
+                        <div id="contactList" class="contact-list" style="max-height: 150px; overflow-y: auto; background: rgba(0,0,0,0.3); border-radius: 4px; padding: 5px;">
+                            <!-- 联系人将动态插入这里 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 中间面板 - 聊天区域 -->
+        <div class="panel main-panel">
+            <div class="panel-header">
+                <h2><i class="fas fa-comments"></i> 安全聊天室 <select id="channelSelect" class="channel-select">
+                    <option value="public">公共频道</option>
+                    <option value="private">加密频道</option>
+                </select>
+                <button id="globalConfigBtn" class="config-btn" title="全局配置" onclick="showGlobalConfigModal()"><i class="fas fa-cog"></i> 全局配置</button>
+                <label class="checkbox-label" style="display: inline-block; cursor: pointer; vertical-align: middle;" title="聊天保护开关">
+                    <input type="checkbox" id="chatProtectionToggle" style="vertical-align: middle;"> 
+                    <i class="fas fa-shield-alt" style="margin-right: 4px;"></i>
+                    <span id="protectionStatusText">聊天保护</span>
+                </label>
+                </h2>
+                <div class="icon"><i class="fas fa-lock"></i></div>
+            </div>
+            <div class="panel-content" id="chatContainer">
+                <div class="message encrypted">
+                    <div class="message-info">
+                        <span class="sender">system</span>
+                        <span class="timestamp">2026-01-18 15:07:35</span>
+                    </div>
+                    <div class="message-content">安全通道已建立。所有通信均已加密。</div>
+                </div>
+            </div>
+            
+            <div class="input-area">
+                <div class="input-group">
+                    <input type="text" id="messageInput" placeholder="在此输入您的加密消息...">
+                    <button id="sendButton"><i class="fas fa-paper-plane"></i> 发送</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧面板 - 网络与安全信息 -->
+        <div class="info-panel">
+            <div class="panel">
+                <div class="panel-header">
+                    <h2><i class="fas fa-network-wired"></i> 网络与安全</h2>
+                    <div class="icon"><i class="fas fa-shield-alt"></i></div>
+                </div>
+                <div class="panel-content">
+                    <div class="info-item network-info-item">
+                        <label>网络环境:</label>
+                        <div class="info-value" id="networkInfo">获取中...</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-value">
+                            <div>连接: <span id="connStatus">在线</span></div>
+                            <div>加密: <span id="encStatus">激活</span></div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-value">
+                            <div>加密: <span id="encryptionStatus">AES-256 激活</span></div>
+                            <div>连接: <span id="connectionStatus">安全连接</span></div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-value">
+                            <div>发送: <span id="messagesSent">0</span></div>
+                            <div>销毁: <span id="destructionTime">24小时</span></div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-value" id="riskLevel">低风险</div>
+                        <div class="progress-bar">
+                            <div class="progress-level" id="riskProgress"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 系统消息提示区域 -->
+            <div class="panel system-message-panel">
+                <div class="panel-header">
+                    <h2><i class="fas fa-bell"></i> 系统消息</h2>
+                    <div class="icon"><i class="fas fa-exclamation-triangle"></i></div>
+                </div>
+                <div class="panel-content">
+                    <div id="systemMessages" class="system-messages-container">
+                        <!-- 系统消息将显示在这里 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/jquery-1.10.2.min.js"></script>
+    
+    <!-- Bootstrap JS Bundle with Popper 从BootCDN加载 -->
+    <script src="js/bootstrap.bundle.min.js"></script>
+    
+    <!-- 应用程序脚本 -->
+    <script src="js/crypto.js"></script>
+    <script src="js/config-manager.js"></script>
+    <script src="js/screen-protection.js"></script>
+    <script src="js/chat-protection.js"></script>  <!-- 新增：聊天保护功能模块 -->
+    <script src="js/matrix-bg.js"></script>  <!-- 矩阵背景动画模块 -->
+    <script src="js/crypto-manager.js"></script>
+    <script src="js/contact-manager.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/chat-core.js"></script>
+
+    <!-- 全局配置模态框 -->
+    <div id="globalConfigModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-cog"></i> 全局配置</h3>
+                <span id="closeModal" class="close" onclick="hideGlobalConfigModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="config-section">
+                    <label for="tempPassword">临时密码:</label>
+                    <div class="password-input-wrapper">
+                        <input type="password" id="tempPassword" placeholder="留空则不修改当前密码">
+                        <span id="toggleTempPassword" class="toggle-password" title="显示/隐藏密码">
+                            <i class="fas fa-eye"></i>
+                        </span>
+                    </div>
+                    <small style="color: #ff6b6b; margin-top: 8px; display: block;">重要提示：请务必记住您的临时密码，否则无法解锁屏幕锁定状态。忘记密码后需等待24小时系统自动刷新身份。</small>
+                </div>
+                
+                <div class="config-section">
+                    <label for="screenLockTimeout">屏幕无操作锁定时间 (分钟):</label>
+                    <input type="number" id="screenLockTimeout" min="1" value="5">
+                    <small>默认为5分钟，无操作后自动锁定，解锁需输入临时密码</small>
+                </div>
+                
+                <div class="config-section">
+                    <label for="publicDestructTime">公共频道消息销毁时间 (分钟):</label>
+                    <input type="number" id="publicDestructTime" min="1" value="1440">
+                    <small>默认为1440分钟（24小时），超过此时间服务器将清除该频道用户聊天记录</small>
+                </div>
+                
+                <div class="config-section">
+                    <label for="privateDestructTime">加密频道消息销毁时间 (分钟):</label>
+                    <div class="config-controls">
+                        <input type="number" id="privateDestructTime" min="1" value="1440">
+                        <small>默认为1440分钟（24小时），超过此时间服务器将清除该频道用户聊天记录</small>
+                    </div>
+                </div>
+            </div>
+            <small style="color: #ff6b6b; margin-top: 8px; display: block;text-align: center;">强安全模式下消息销毁时间可设置30分钟或更短。</small>
+            <div class="modal-footer">
+                <button id="saveConfig" class="btn-save" onclick="saveConfiguration()">保存</button>
+                <button id="cancelConfig" class="btn-cancel" onclick="hideGlobalConfigModal()">取消</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 屏幕锁定模态框 -->
+    <div id="screenLockModal" class="modal-overlay" style="display: none; z-index: 10000;">
+        <div class="modal-content" style="width: 400px; text-align: center; padding: 30px;">
+            <div class="modal-header" style="border-bottom: 0; margin-bottom: 20px;">
+                <h3><i class="fas fa-lock"></i> 屏幕已锁定</h3>
+            </div>
+            <div class="modal-body">
+                <p>请输入临时密码解锁屏幕</p>
+                <div class="password-input-wrapper">
+                    <input type="password" id="unlockPassword" placeholder="输入临时密码..." style="width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px;">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="unlockScreenBtn" class="btn btn-primary" style="padding: 8px 16px; margin-right: 10px;" onclick="handleUnlockScreen()">解锁</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 处理屏幕解锁功能
+        function handleUnlockScreen() {
+            const unlockPassword = document.getElementById('unlockPassword');
+            const screenLockModal = document.getElementById('screenLockModal');
+            const screenLockModalInstance = window.screenLockModalInstance; // 如果使用Bootstrap模态框
+            
+            window.unlockScreenFunc(unlockPassword, screenLockModal, screenLockModalInstance, window.addSystemMessage);
+        }
+
+        // 按回车键解锁
+        document.getElementById('unlockPassword')?.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                handleUnlockScreen();
+            }
+        });
+    </script>
+</body>
+</html>

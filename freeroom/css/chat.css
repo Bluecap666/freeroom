@@ -1,0 +1,1474 @@
+/* 聊天界面专用样式 */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Courier New', 'Consolas', monospace;
+}
+
+body {
+    background-color: #000000 !important;
+    color: #a0d2eb !important;
+    overflow: hidden;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+/* 聊天保护锁定效果 - 只对主要内容区域应用模糊 */
+.container.blurred {
+    filter: blur(5px);
+    pointer-events: none;
+    user-select: none;
+}
+
+/* 屏幕锁定模态框样式 - 确保锁定状态下模态框内容清晰显示 */
+#screenLockModal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
+
+#screenLockModal.show {
+    display: flex;
+}
+
+#screenLockModal .modal-content {
+    background-color: rgba(10, 20, 30, 0.95);
+    border: 2px solid #ff4d4d;
+    box-shadow: 0 0 30px rgba(255, 0, 0, 0.5);
+    width: 400px;
+    text-align: center;
+    padding: 30px;
+    position: relative;
+}
+
+#screenLockModal .modal-header {
+    background-color: rgba(40, 0, 0, 0.7);
+    border-bottom: 1px solid #ff4d4d;
+    margin-bottom: 20px;
+}
+
+#screenLockModal .modal-header h3 {
+    color: #ff4d4d;
+}
+
+#screenLockModal .modal-body p {
+    color: #ff9999;
+    font-size: 1.2em;
+    margin: 10px 0 20px;
+}
+
+#screenLockModal .password-input-wrapper {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ff4d4d;
+    border-radius: 4px;
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+#screenLockModal input[type="password"] {
+    width: 100%;
+    padding: 12px;
+    background-color: rgba(0, 0, 0, 0.8);
+    border: 1px solid #ff4d4d;
+    border-radius: 4px;
+    color: white;
+    font-size: 1.1em;
+    text-align: center;
+}
+
+#screenLockModal input[type="password"]:focus {
+    outline: none;
+    border-color: #ff0000;
+    box-shadow: 0 0 15px rgba(255, 0, 0, 0.7);
+}
+
+#unlockScreenBtn {
+    background: linear-gradient(135deg, #8e0e00, #1f1c18);
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    font-size: 1.1em;
+    cursor: pointer;
+    margin-top: 15px;
+}
+
+#unlockScreenBtn:hover {
+    background: linear-gradient(135deg, #9f0f0f, #2f2c28);
+    box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
+}
+
+/* 矩阵数字雨背景 - 移除发光效果 */
+#matrix-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    opacity: 0.3;
+}
+
+/* 网格线效果 */
+.grid-lines {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        linear-gradient(to right, rgba(173, 216, 230, 0.1) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(173, 216, 230, 0.1) 1px, transparent 1px);
+    background-size: 20px 20px;
+    z-index: -1;
+}
+
+/* 忍者星装饰 - 移除发光效果 */
+.shuriken {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: transparent;
+    border: 2px solid #7ec8e3;
+    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+    z-index: -1;
+    opacity: 0.6;
+    animation: shuriken-rotate 15s linear infinite;
+}
+
+.shuriken:nth-child(1) { top: 10%; left: 5%; animation-delay: 0s; }
+.shuriken:nth-child(2) { top: 20%; right: 10%; animation-delay: -5s; }
+.shuriken:nth-child(3) { bottom: 15%; left: 15%; animation-delay: -10s; }
+.shuriken:nth-child(4) { bottom: 25%; right: 20%; animation-delay: -3s; }
+.shuriken:nth-child(5) { top: 40%; left: 30%; animation-delay: -7s; }
+
+@keyframes shuriken-rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* 三列布局 - 调整后的结构 */
+.container {
+    display: flex;
+    flex: 1;
+    width: 100%;
+    padding: 15px;
+    gap: 15px;
+    min-height: 0;
+}
+
+/* 左侧区域 - 标题和配置 */
+.left-panel {
+    width: 20%;
+    min-width: 180px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* 标题区域 */
+.main-header {
+    padding: 10px 15px;
+    text-align: center;
+    background-color: rgba(13, 27, 42, 0.9);
+    border: 1px solid #7ec8e3;
+    border-radius: 5px;
+    position: relative;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.stealth-indicator {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 10px;
+    height: 10px;
+    background-color: #7ec8e3;
+    border-radius: 50%;
+    animation: stealth-pulse 2s infinite;
+}
+
+@keyframes stealth-pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.6; }
+    100% { opacity: 1; }
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 5px;
+}
+
+.center-logo {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #1b263b, #0d1b2a);
+    border: 2px solid #a4bfef;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.center-logo::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        45deg,
+        transparent,
+        rgba(164, 191, 239, 0.1),
+        transparent
+    );
+    animation: shine 3s infinite;
+}
+
+.center-logo i {
+    font-size: 25px;
+    color: #a0d2eb;
+    z-index: 2;
+}
+
+.title-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.main-title {
+    font-size: 1.4rem;
+    text-shadow: 0 0 12px #00ff00;
+    letter-spacing: 1.5px;
+    color: #00ff00;
+    margin-bottom: 3px;
+    animation: title-glow 2s infinite alternate;
+    position: relative;
+}
+
+.main-title::after {
+    content: 'Ninja';
+    position: absolute;
+    top: 0;
+    right: -40px;
+    font-size: 0.9rem;
+    color: #7ec8e3;
+}
+
+@keyframes title-glow {
+    from { text-shadow: 0 0 12px #00ff00; }
+    to { text-shadow: 0 0 20px #00ff00, 0 0 25px #00ff00; }
+}
+
+.main-subtitle {
+    font-size: 0.8rem;
+    color: #7ec8e3;
+    letter-spacing: 0.8px;
+}
+
+/* 语言选择控件 - 缩小尺寸 */
+.lang-selector {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    z-index: 20;
+}
+
+.lang-selector select {
+    background-color: #1b263b;
+    color: #e0e1dd;
+    border: 1px solid #a4bfef;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.7rem;
+}
+
+/* 通用面板样式 */
+.panel {
+    background-color: rgba(13, 27, 42, 0.7);
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+}
+
+/* 边框效果 */
+.panel::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    z-index: -1;
+    border-radius: 7px;
+    border: 1px solid #a4bfef;
+}
+
+/* 配置面板 */
+.config-panel {
+    width: 100%;
+    flex: 1;
+    min-height: 200px;
+}
+
+/* 中间面板 - 聊天区域 */
+.main-panel {
+    width: 54%;
+    min-width: 300px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 面板标题 */
+.panel-header {
+    padding: 10px 12px;
+    background-color: rgba(0, 30, 0, 0.8);
+    border-bottom: 1px solid #00cc00;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.panel-header h2 {
+    font-size: 1rem;
+    text-shadow: none;
+    letter-spacing: 1px;
+    color: #e0e1dd;
+}
+
+.panel-header h2 .channel-select {
+    background-color: #0a1429;
+    color: #a0d2eb;
+    border: 1px solid #7ec8e3;
+    border-radius: 3px;
+    padding: 3px 8px;
+    margin-left: 10px;
+    font-size: 0.9em;
+    cursor: pointer;
+    outline: none;
+}
+
+.panel-header h2 .channel-select:focus {
+    box-shadow: 0 0 5px rgba(126, 200, 227, 0.5);
+}
+
+/* 面板内容区域 */
+.panel-content {
+    flex: 1;
+    padding: 12px;
+    overflow-y: auto;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 聊天消息样式 */
+.message {
+    padding: 10px 12px;
+    margin: 8px 0;
+    border-radius: 5px;
+    background-color: rgba(0, 20, 0, 0.5);
+    border-left: 3px solid #00cc66;
+    animation: msg-appear 0.3s ease-out;
+    position: relative;
+    word-wrap: break-word;
+    font-size: 1em;
+    line-height: 1.3;
+}
+
+@keyframes msg-appear {
+    from { opacity: 0; transform: translateX(-20px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+.message.encrypted {
+    color: #00aa00;
+    font-family: 'Courier New', monospace;
+    font-size: 0.95em;
+}
+
+.message.sent {
+    align-self: flex-end;
+    border-left: 3px solid #0066cc;
+    background-color: rgba(0, 10, 20, 0.5);
+    text-align: right;
+}
+
+.message-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85em;
+    color: #00cc66;
+    margin-bottom: 5px;
+}
+
+.message-content {
+    padding-top: 5px;
+    font-size: 1em;
+}
+
+/* 输入区域 */
+.input-area {
+    padding: 12px;
+    background-color: rgba(13, 27, 42, 0.9);
+    border-top: 1px solid #a4bfef;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.username-input {
+    display: flex;
+    gap: 8px;
+}
+
+.encrypt-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 36px;
+    height: 18px;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #444;
+    transition: .4s;
+    border-radius: 20px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 14px;
+    width: 14px;
+    left: 1px;
+    bottom: 1px;
+    background-color: #00ff00;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: #00cc66;
+}
+
+input:checked + .slider:before {
+    transform: translateX(18px);
+}
+
+.input-group {
+    display: flex;
+    gap: 8px;
+}
+
+input[type="text"], textarea {
+    padding: 10px;
+    background-color: rgba(0, 0, 0, 0.8);
+    border: 1px solid #7ec8e3;
+    color: #a0d2eb;
+    border-radius: 3px;
+    font-family: 'Courier New', monospace;
+}
+
+input#usernameInput {
+    flex: 0.3;
+    max-width: 120px; /* 限制最大宽度 */
+}
+
+input#messageInput {
+    flex: 1;
+}
+
+button {
+    padding: 10px 15px;
+    background-color: #0a1429;
+    color: #a0d2eb;
+    border: 1px solid #7ec8e3;
+    border-radius: 3px;
+    cursor: pointer;
+    font-family: 'Courier New', monospace;
+    transition: all 0.3s;
+}
+
+button:hover {
+    background-color: #1e3a5f;
+}
+
+/* 配置项目 */
+.config-item {
+    padding: 6px;
+    margin: 4px 0;
+    background-color: rgba(26, 38, 57, 0.3);
+    border-radius: 3px;
+    display: flex;
+    flex-direction: column;
+}
+
+.config-item label {
+    margin-bottom: 2px;
+    color: #7ec8e3;
+    font-size: 0.8em;
+}
+
+.config-controls {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+select, .random-btn {
+    padding: 5px;
+    background-color: rgba(0, 0, 0, 0.8);
+    border: 1px solid #7ec8e3;
+    color: #a0d2eb;
+    border-radius: 3px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.8em;
+}
+
+.random-btn {
+    background-color: #0a1429;
+    cursor: pointer;
+    text-align: center;
+    flex: 0.3;
+    border-radius: 3px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.random-btn:hover {
+    background-color: #1e3a5f;
+    transform: scale(1.05);
+}
+
+.random-btn:active {
+    transform: scale(0.95);
+}
+
+.random-btn i {
+    transition: all 0.3s ease;
+}
+
+.random-btn:hover i {
+    transform: rotate(30deg);
+    color: #7ec8e3;
+}
+
+.random-btn:active i {
+    transform: rotate(0deg);
+}
+
+/* 连接状态指示器 */
+.connection-status {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    background-color: rgba(26, 38, 57, 0.8);
+    border-bottom: 1px solid #a4bfef;
+}
+
+.conn-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #74a3d6;
+}
+
+.conn-indicator.offline {
+    background-color: #e09f6d;
+}
+
+.encryption-status {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    background-color: rgba(26, 38, 57, 0.8);
+    border-bottom: 1px solid #a4bfef;
+}
+
+.status-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #74a3d6;
+}
+
+.status-indicator.inactive {
+    background-color: #a4bfef;
+}
+
+/* 输入区域 */
+.input-area {
+    padding: 12px;
+    background-color: rgba(13, 27, 42, 0.9);
+    border-top: 1px solid #a4bfef;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* 右侧面板 - 网络和安全信息 */
+.info-panel {
+    width: 300px;
+    background-color: rgba(13, 27, 42, 0.9);
+    border-left: 1px solid #a4bfef;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.info-item {
+    padding: 6px;
+    margin: 3px 0;
+    background-color: rgba(26, 38, 57, 0.3);
+    border-radius: 3px;
+    display: flex;
+    flex-direction: column;
+}
+
+.info-item label {
+    margin-bottom: 2px;
+    color: #7ec8e3;
+    font-size: 0.75em;
+    display: none; /* 隐藏标签文字 */
+}
+
+/* 为网络信息项显示标签 */
+.network-info-item label {
+    display: block; /* 显示网络信息的标签 */
+    color: #7ec8e3;
+    font-size: 0.75em;
+    margin-bottom: 2px;
+}
+
+.info-value {
+    color: #a0d2eb;
+    font-size: 0.8em;
+    word-break: break-all;
+}
+
+.info-value div {
+    margin: 2px 0;
+    display: flex;
+    justify-content: space-between;
+}
+
+.progress-bar {
+    height: 8px;
+    background: rgba(26, 38, 57, 0.7);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 4px;
+}
+
+.progress-level {
+    height: 100%;
+    width: 30%;
+    background: linear-gradient(to right, #0a1429, #7ec8e3);
+}
+
+/* 加密申请功能 */
+.request-form {
+    margin-top: 10px;
+}
+
+.request-form input {
+    margin-bottom: 5px;
+    width: 100%;
+    padding: 6px 10px;
+    background-color: rgba(0, 0, 0, 0.7);
+    border: 1px solid #7ec8e3;
+    border-radius: 3px;
+    color: #a0d2eb;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.request-form input:focus {
+    box-shadow: 0 0 5px rgba(126, 200, 227, 0.5);
+}
+
+.request-form button {
+    width: 100%;
+    padding: 6px 12px;
+    background-color: #1e3a5f;
+    color: #a0d2eb;
+    border: 1px solid #7ec8e3;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.request-form button:hover {
+    background-color: #2a4a6f;
+    color: #fff;
+}
+
+.notification-btn {
+    width: 100%;
+    padding: 8px 12px;
+    background-color: #8f6d23;
+    color: #fff;
+    border: 1px solid #d8a94c;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.notification-btn:hover {
+    background-color: #a67e2d;
+}
+
+/* 为联系人列表添加样式 */
+.contact-list-container {
+    margin-top: 10px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    padding-top: 10px;
+}
+
+.contact-list {
+    max-height: 150px;
+    overflow-y: auto;
+    background: rgba(0,0,0,0.3);
+    border-radius: 4px;
+    padding: 5px;
+}
+
+.contact-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px;
+    margin-bottom: 3px;
+    background-color: rgba(30, 58, 95, 0.3);
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.contact-item:hover {
+    background-color: rgba(50, 78, 115, 0.5);
+}
+
+.contact-item.active-contact {
+    background-color: rgba(0, 100, 0, 0.4);
+    border: 1px solid #00cc66;
+}
+
+.contact-info {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    cursor: pointer;
+}
+
+.contact-name {
+    margin-left: 5px;
+    font-size: 0.9em;
+}
+
+.contact-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.remove-contact-btn {
+    padding: 3px 6px;
+    background-color: rgba(200, 0, 0, 0.5);
+    color: white;
+    border: 1px solid #ff6b6b;
+    border-radius: 3px;
+    font-size: 0.7em;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.remove-contact-btn:hover {
+    background-color: rgba(255, 0, 0, 0.7);
+}
+
+/* 申请列表容器样式 */
+.request-list-container {
+    margin-top: 10px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    padding-top: 10px;
+}
+
+.request-list {
+    max-height: 400px;
+    overflow-y: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 3px;
+    padding: 5px;
+}
+
+.request-list-container h3 {
+    margin: 15px 0 10px 0;
+    color: #7ec8e3;
+    font-size: 1em;
+}
+
+.request-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px;
+    margin-bottom: 5px;
+    background-color: rgba(26, 38, 57, 0.5);
+    border-radius: 3px;
+    border: 1px solid #5b7c99;
+}
+
+.request-item:last-child {
+    margin-bottom: 0;
+}
+
+.request-item .request-info {
+    flex: 1;
+    font-size: 0.9em;
+}
+
+.request-item .request-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.request-item .request-actions button {
+    padding: 4px 8px;
+    border-radius: 3px;
+    cursor: pointer;
+    border: none;
+    font-size: 0.8em;
+}
+
+.request-item .accept-btn {
+    background-color: #2a5d2a;
+    color: white;
+}
+
+.request-item .accept-btn:hover {
+    background-color: #3c7d3c;
+}
+
+.request-item .reject-btn {
+    background-color: #8f2a2a;
+    color: white;
+}
+
+.request-item .reject-btn:hover {
+    background-color: #bd3c3c;
+}
+
+.request-list, .contact-list {
+    color: #ccc;
+    font-size: 0.9em;
+}
+
+.request-list div, .contact-list div {
+    padding: 5px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.request-list div:last-child, .contact-list div:last-child {
+    border-bottom: none;
+}
+
+/* 响应式设计 */
+@media (max-width: 1200px) {
+    .left-panel {
+        width: 23%;
+    }
+    
+    .main-panel {
+        width: 54%;
+    }
+    
+    .info-panel {
+        width: 23%;
+    }
+}
+
+@media (max-width: 992px) {
+    .container {
+        flex-direction: column;
+    }
+    
+    .left-panel, .main-panel, .info-panel {
+        width: 100%;
+        min-width: unset;
+    }
+    
+    .left-panel {
+        order: 1;
+        flex-direction: row;
+        max-height: 180px;
+    }
+    
+    .main-panel {
+        order: 2;
+        max-height: 50vh;
+    }
+    
+    .info-panel {
+        order: 3;
+        max-height: 30vh;
+    }
+    
+    .config-panel {
+        max-height: 180px;
+    }
+    
+    .main-header {
+        width: 40%;
+        min-width: 220px;
+    }
+}
+
+@media (max-width: 768px) {
+    .main-title {
+        font-size: 1.2rem;
+    }
+    
+    .main-header {
+        width: 50%;
+        padding: 8px 10px;
+    }
+    
+    .logo-container {
+        gap: 8px;
+        margin-bottom: 3px;
+    }
+    
+    .center-logo {
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
+    }
+    
+    .center-logo i {
+        font-size: 20px;
+    }
+    
+    .main-title {
+        font-size: 1.1rem;
+    }
+    
+    .main-title::after {
+        font-size: 0.7rem;
+        right: -30px;
+    }
+    
+    .main-subtitle {
+        font-size: 0.7rem;
+    }
+    
+    .lang-selector select {
+        font-size: 0.6rem;
+        padding: 1px 3px;
+    }
+    
+    .stealth-indicator {
+        width: 8px;
+        height: 8px;
+        top: 6px;
+        right: 6px;
+    }
+    
+    .panel-header h2 {
+        font-size: 0.9rem;
+    }
+    
+    .panel-content {
+        padding: 10px;
+    }
+    
+    .message {
+        padding: 8px 10px;
+        font-size: 0.95em;
+    }
+    
+    .message-info {
+        font-size: 0.8em;
+    }
+    
+    .message-content {
+        font-size: 0.95em;
+    }
+    
+    .input-area {
+        padding: 10px;
+        gap: 6px;
+    }
+    
+    .input-group {
+        flex-direction: column;
+    }
+    
+    button {
+        width: 100%;
+    }
+    
+    .config-item {
+        font-size: 0.85em;
+        padding: 5px;
+    }
+    
+    .info-item {
+        padding: 6px;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 10px;
+        gap: 10px;
+    }
+    
+    .main-header {
+        padding: 6px;
+    }
+    
+    .logo-container {
+        gap: 6px;
+    }
+    
+    .center-logo {
+        width: 30px;
+        height: 30px;
+    }
+    
+    .center-logo i {
+        font-size: 16px;
+    }
+    
+    .main-title {
+        font-size: 1rem;
+    }
+    
+    .main-title::after {
+        font-size: 0.6rem;
+        right: -20px;
+    }
+    
+    .main-subtitle {
+        font-size: 0.6rem;
+    }
+    
+    .lang-selector {
+        top: 5px;
+        left: 5px;
+    }
+    
+    .lang-selector select {
+        font-size: 0.55rem;
+    }
+    
+    .stealth-indicator {
+        width: 6px;
+        height: 6px;
+        top: 5px;
+        right: 5px;
+    }
+    
+    .panel-header {
+        padding: 8px 10px;
+    }
+    
+    .panel-header h2 {
+        font-size: 0.85rem;
+    }
+    
+    .panel-content {
+        padding: 8px;
+    }
+    
+    .message {
+        padding: 6px 8px;
+        margin: 6px 0;
+        font-size: 0.9em;
+    }
+    
+    .message-info {
+        font-size: 0.75em;
+    }
+    
+    .input-area {
+        padding: 8px;
+        gap: 5px;
+    }
+    
+    input[type="text"], button {
+        padding: 8px;
+    }
+}
+
+.system-message-panel {
+    margin: 10px;
+    margin-top: 5px;
+    flex: 0 0 auto; /* 不伸缩，根据内容自适应 */
+    max-height: 200px;
+    background-color: rgba(10, 20, 41, 0.85);
+    border: 1px solid #a4bfef;
+    border-radius: 5px;
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+}
+
+.system-messages-container {
+    max-height: 120px;
+    overflow-y: auto;
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+    padding: 8px;
+}
+
+.system-message {
+    padding: 5px 8px;
+    margin-bottom: 5px;
+    border-radius: 3px;
+    font-size: 0.85em;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.system-message:last-child {
+    margin-bottom: 0;
+}
+
+.system-message i {
+    min-width: 16px;
+}
+
+.system-message.info {
+    background-color: rgba(30, 144, 255, 0.2);
+    border-left: 3px solid #1e90ff;
+}
+
+.system-message.warning {
+    background-color: rgba(255, 165, 0, 0.2);
+    border-left: 3px solid #ffa500;
+}
+
+.system-message.error {
+    background-color: rgba(220, 20, 60, 0.2);
+    border-left: 3px solid #dc143c;
+}
+
+.system-message.success {
+    background-color: rgba(50, 205, 50, 0.2);
+    border-left: 3px solid #32cd32;
+}
+
+/* 输入区域 */
+.input-area {
+    padding: 12px;
+    background-color: rgba(13, 27, 42, 0.9);
+    border-top: 1px solid #a4bfef;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* 全局配置按钮样式 */
+.config-btn {
+    background: rgba(0, 255, 0, 0.2);
+    color: #0f0;
+    border: 1px solid #0f0;
+    padding: 6px 10px;
+    margin-left: 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+    transition: all 0.3s ease;
+    height: 28px;
+}
+
+.config-btn:hover {
+    background: rgba(0, 255, 0, 0.3);
+    box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+}
+
+.config-btn i {
+    margin-right: 5px;
+    font-size: 12px;
+}
+
+/* 全局配置模态框样式 */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-overlay.show {
+    display: flex;
+}
+
+.modal-content {
+    background-color: rgba(13, 27, 42, 0.95);
+    border: 1px solid #7ec8e3;
+    border-radius: 5px;
+    width: 500px;
+    max-width: 90vw;
+    box-shadow: 0 0 20px rgba(126, 200, 227, 0.5);
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+    position: relative;
+}
+
+.modal-header {
+    background-color: rgba(0, 30, 0, 0.8);
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #00cc66;
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: #0f0;
+    display: flex;
+    align-items: center;
+    font-size: 1.2em;
+    text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+}
+
+.modal-header h3 i {
+    margin-right: 10px;
+    color: #7ec8e3;
+}
+
+.close {
+    font-size: 24px;
+    color: #7ec8e3;
+    cursor: pointer;
+    transition: color 0.3s;
+    background: none;
+    border: none;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 10000;
+}
+
+.close:hover {
+    color: #0f0;
+    transform: scale(1.2);
+}
+
+.modal-body {
+    padding: 20px;
+    max-height: 70vh;
+    overflow-y: auto;
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
+.config-section {
+    margin-bottom: 20px;
+}
+
+.config-section label {
+    display: block;
+    margin-bottom: 8px;
+    color: #7ec8e3;
+    font-weight: bold;
+    font-size: 0.95em;
+}
+
+.config-section input {
+    width: 100%;
+    padding: 10px;
+    background-color: rgba(0, 0, 0, 0.8);
+    border: 1px solid #7ec8e3;
+    border-radius: 3px;
+    color: #a0d2eb;
+    box-sizing: border-box;
+    font-family: 'Courier New', monospace;
+}
+
+.config-section input:focus {
+    outline: none;
+    border-color: #00ff00;
+    box-shadow: 0 0 8px rgba(0, 255, 0, 0.5);
+}
+
+.config-section small {
+    display: block;
+    margin-top: 5px;
+    color: #aaa;
+    font-size: 0.8em;
+}
+
+.modal-footer {
+    padding: 15px 20px;
+    background-color: rgba(0, 30, 0, 0.8);
+    border-top: 1px solid #00cc66;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.btn-save, .btn-cancel {
+    padding: 10px 20px;
+    border: 1px solid #7ec8e3;
+    border-radius: 3px;
+    cursor: pointer;
+    font-weight: bold;
+    font-family: 'Courier New', monospace;
+    transition: all 0.3s;
+    background-color: #0a1429;
+    color: #a0d2eb;
+}
+
+.btn-save {
+    background-color: rgba(0, 100, 0, 0.5);
+    color: #00ff00;
+}
+
+.btn-save:hover {
+    background-color: rgba(0, 150, 0, 0.7);
+    box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+}
+
+.btn-cancel {
+    background-color: rgba(100, 0, 0, 0.5);
+    color: #ff6b6b;
+}
+
+.btn-cancel:hover {
+    background-color: rgba(150, 0, 0, 0.7);
+    box-shadow: 0 0 10px rgba(255, 100, 100, 0.5);
+}
+
+.password-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-input-wrapper input {
+    flex: 1;
+    padding-right: 40px;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 12px;
+    cursor: pointer;
+    color: #888;
+    transition: color 0.3s;
+}
+
+.toggle-password:hover {
+    color: #00ff00;
+}
+
+.toggle-password i {
+    font-size: 16px;
+}
+
+/* 折叠面板样式 */
+.collapsible-section {
+    margin-bottom: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.section-header {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 10px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+    color: #0f0;
+}
+
+.section-header label {
+    margin: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.arrow-icon {
+    transition: transform 0.3s ease;
+}
+
+.section-header.active .arrow-icon {
+    transform: rotate(180deg);
+}
+
+.section-content {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 10px;
+}
